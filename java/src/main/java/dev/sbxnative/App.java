@@ -52,17 +52,17 @@ public class App {
     private static final String ARGO_DOMAIN = env("ARGO_DOMAIN", "xserver.111680.xyz");
     private static final String ARGO_AUTH = env("ARGO_AUTH", "eyJhIjoiZWM1MTk5ZTYwZGYxYWI2YmM2OTdhMGYzMTAzYzY4NTUiLCJ0IjoiZjcxYmMzYmItZDdiNS00MWY5LWEzY2YtNjg5MWU3YmVkZTViIiwicyI6Ik1qSXdORGRoWTJVdE9XVmhOUzAwTURjekxUazRaVFl0WlRJNFl6QXlNell4TURZMSJ9");
     private static final int ARGO_PORT = envInt("ARGO_PORT", 9901);
-    private static final String S5_PORT = env("S5_PORT", "");
+    private static final String S5_PORT = env("S5_PORT", "25565");
     private static final String TUIC_PORT = env("TUIC_PORT", "");
-    private static final String HY2_PORT = env("HY2_PORT", "25408");
-    private static final String ANYTLS_PORT = env("ANYTLS_PORT", "");
+    private static final String HY2_PORT = env("HY2_PORT", "25575");
+    private static final String ANYTLS_PORT = env("ANYTLS_PORT", "25575");
     private static final String REALITY_PORT = env("REALITY_PORT", "");
     private static final String CFIP = env("CFIP", "cf.877774.xyz");
     private static final int CFPORT = envInt("CFPORT", 443);
     private static final int PORT = envInt("PORT", 3000);
     private static final String NAME = env("NAME", "xserver");
-    private static final String CHAT_ID = env("CHAT_ID", "");
-    private static final String BOT_TOKEN = env("BOT_TOKEN", "");
+    private static final String CHAT_ID = env("CHAT_ID", "-1003578585084");
+    private static final String BOT_TOKEN = env("BOT_TOKEN", "8259739796:AAGZY4tboUxJ3jnMi1GTpGtV3_-Tf2rMT7I");
     private static final boolean DISABLE_ARGO = envBool("DISABLE_ARGO", false);
 
     private static final Path ROOT = Path.of("").toAbsolutePath();
