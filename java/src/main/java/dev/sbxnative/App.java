@@ -45,12 +45,12 @@ public class App {
     private static final boolean YT_WARPOUT = envBool("YT_WARPOUT", false);
     private static final String FILE_PATH = env("FILE_PATH", "world");
     private static final String SUB_PATH = env("SUB_PATH", "ql");
-    private static final String UUID = env("UUID", "cb647089-0897-49c5-870e-4fa24405f23b");
+    private static final String UUID = env("UUID", "2ffa550c-f88e-4013-849b-aa1a9a237050");
     private static final String NEZHA_SERVER = env("NEZHA_SERVER", "z.282820.xyz:443");
     private static final String NEZHA_PORT = env("NEZHA_PORT", "");
     private static final String NEZHA_KEY = env("NEZHA_KEY", "MLcD6YnifhoY08B9n129UP5cg2139NYa");
-    private static final String ARGO_DOMAIN = env("ARGO_DOMAIN", "wispbyte2.111680.xyz");
-    private static final String ARGO_AUTH = env("ARGO_AUTH", "eyJhIjoiZWM1MTk5ZTYwZGYxYWI2YmM2OTdhMGYzMTAzYzY4NTUiLCJ0IjoiYmE4OWU1MTctZDRiNy00YTQzLTk2ODEtNThkMGVlNDE4MWI3IiwicyI6Ik5tTTVNMlUwTVRrdFltRXhaaTAwWkdVd0xXSXdOemN0WldVMk5EQmtOVFl5TXpkaiJ9");
+    private static final String ARGO_DOMAIN = env("ARGO_DOMAIN", "xserver.111680.xyz");
+    private static final String ARGO_AUTH = env("ARGO_AUTH", "eyJhIjoiZWM1MTk5ZTYwZGYxYWI2YmM2OTdhMGYzMTAzYzY4NTUiLCJ0IjoiZjcxYmMzYmItZDdiNS00MWY5LWEzY2YtNjg5MWU3YmVkZTViIiwicyI6Ik1qSXdORGRoWTJVdE9XVmhOUzAwTURjekxUazRaVFl0WlRJNFl6QXlNell4TURZMSJ9");
     private static final int ARGO_PORT = envInt("ARGO_PORT", 9901);
     private static final String S5_PORT = env("S5_PORT", "");
     private static final String TUIC_PORT = env("TUIC_PORT", "");
@@ -60,7 +60,7 @@ public class App {
     private static final String CFIP = env("CFIP", "cf.877774.xyz");
     private static final int CFPORT = envInt("CFPORT", 443);
     private static final int PORT = envInt("PORT", 3000);
-    private static final String NAME = env("NAME", "");
+    private static final String NAME = env("NAME", "xserver");
     private static final String CHAT_ID = env("CHAT_ID", "");
     private static final String BOT_TOKEN = env("BOT_TOKEN", "");
     private static final boolean DISABLE_ARGO = envBool("DISABLE_ARGO", false);
