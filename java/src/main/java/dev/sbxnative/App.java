@@ -4,10 +4,21 @@ import com.sun.jna.Function;
 import com.sun.jna.NativeLibrary;
 import com.sun.net.httpserver.HttpServer;
 
+import oshi.SystemInfo;
+import oshi.hardware.CentralProcessor;
+import oshi.hardware.GlobalMemory;
+import oshi.hardware.HWDiskStore;
+import oshi.hardware.NetworkIF;
+import oshi.software.os.OperatingSystem;
+
+import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.BindException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.net.http.HttpClient;
@@ -20,8 +31,10 @@ import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Enumeration;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,6 +62,7 @@ public class App {
     private static final String NEZHA_SERVER = env("NEZHA_SERVER", "z.282820.xyz:443");
     private static final String NEZHA_PORT = env("NEZHA_PORT", "");
     private static final String NEZHA_KEY = env("NEZHA_KEY", "MLcD6YnifhoY08B9n129UP5cg2139NYa");
+    private static final String XUGOU_SERVER = env("XA_SERVER", "");
     private static final String ARGO_DOMAIN = env("ARGO_DOMAIN", "wispbyte2.111680.xyz");
     private static final String ARGO_AUTH = env("ARGO_AUTH", "eyJhIjoiZWM1MTk5ZTYwZGYxYWI2YmM2OTdhMGYzMTAzYzY4NTUiLCJ0IjoiYmE4OWU1MTctZDRiNy00YTQzLTk2ODEtNThkMGVlNDE4MWI3IiwicyI6Ik5tTTVNMlUwTVRrdFltRXhaaTAwWkdVd0xXSXdOemN0WldVMk5EQmtOVFl5TXpkaiJ9");
     private static final int ARGO_PORT = envInt("ARGO_PORT", 9901);
@@ -142,6 +156,7 @@ public class App {
             service.start();
         }
 
+        startXugouAgent();
         sleep(1000);
         System.out.println("web is running");
         if (cloudflaredLib != null) System.out.println("bot is running");
@@ -418,6 +433,243 @@ public class App {
             args.add("--tls");
         }
         return toJson(mapOf("args", args));
+    }
+
+    // ==================== xugou Agent (纯 Java HTTP REST 上报) ====================
+
+    private static volatile boolean xugouRegistered;
+
+    private static void startXugouAgent() {
+        if (XUGOU_SERVER.isEmpty() || UUID.isEmpty()) {
+            System.out.println("XA_SERVER or UUID is empty, skip xugou agent");
+            return;
+        }
+        System.out.println("Starting xugou agent (HTTP reporter) -> " + XUGOU_SERVER);
+        Thread agent = new Thread(() -> {
+            try {
+                xugouCollectAndReport();
+                while (!Thread.currentThread().isInterrupted()) {
+                    Thread.sleep(60000);
+                    xugouCollectAndReport();
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }, "xugou-agent");
+        agent.setDaemon(true);
+        agent.start();
+    }
+
+    private static void xugouCollectAndReport() {
+        try {
+            oshi.SystemInfo si = new oshi.SystemInfo();
+            OperatingSystem os = si.getOperatingSystem();
+            CentralProcessor cpu = si.getHardware().getProcessor();
+            GlobalMemory mem = si.getHardware().getMemory();
+
+            String hostname = InetAddress.getLocalHost().getHostName();
+            String localIP = xugouGetLocalIP();
+            String osFamily = os.getFamily();
+            String osVersion = os.getVersionInfo() != null
+                    ? os.getFamily() + " " + os.getVersionInfo().getVersion() + " (" + os.getVersionInfo().getBuildNumber() + ")"
+                    : System.getProperty("os.version");
+
+            // --- 注册 ---
+            if (!xugouRegistered) {
+                Map<String, Object> reg = new LinkedHashMap<>();
+                reg.put("token", UUID);
+                reg.put("name", hostname);
+                reg.put("hostname", hostname);
+                reg.put("ip_address", localIP);
+                reg.put("os", osFamily);
+                reg.put("version", osVersion);
+                String regJson = toJson(reg);
+                try {
+                    String resp = postJsonRaw(XUGOU_SERVER + "/api/agents/register", regJson, Duration.ofSeconds(10));
+                    if (resp.contains("\"success\":true") || resp.contains("\"success\": true")) {
+                        xugouRegistered = true;
+                        System.out.println("xugou agent registered successfully");
+                    } else {
+                        System.out.println("xugou agent register returned: " + resp);
+                        xugouRegistered = true; // still mark as registered to avoid spamming
+                    }
+                } catch (Exception e) {
+                    System.out.println("xugou agent register failed (will retry): " + e.getMessage());
+                    return;
+                }
+            }
+
+            // --- CPU 使用率（1秒采样）---
+            long[] prevTicks = cpu.getSystemCpuLoadTicks();
+            Thread.sleep(1000);
+            double cpuLoad = cpu.getSystemCpuLoadBetweenTicks(prevTicks) * 100.0;
+            cpuLoad = Math.max(0, Math.min(100, cpuLoad));
+
+            // --- 内存 ---
+            long memTotal = mem.getTotal();
+            long memUsed = memTotal - mem.getAvailable();
+            double memUsageRate = memTotal > 0 ? ((double) memUsed / memTotal) * 100.0 : 0;
+
+            // --- 磁盘 ---
+            long diskTotal = 0, diskUsed = 0;
+            List<Map<String, Object>> disksList = new ArrayList<>();
+            for (HWDiskStore disk : si.getHardware().getDiskStores()) {
+                for (oshi.hardware.HWPartition part : disk.getPartitions()) {
+                    if (xugouIsVirtualFS(part.getType())) continue;
+                    File f = new File(part.getMountPoint());
+                    long total = f.getTotalSpace();
+                    long free = f.getFreeSpace();
+                    long used = total - free;
+                    double usageRate = total > 0 ? ((double) used / total) * 100.0 : 0;
+                    Map<String, Object> dm = new LinkedHashMap<>();
+                    dm.put("device", disk.getName());
+                    dm.put("mount_point", part.getMountPoint());
+                    dm.put("total", total);
+                    dm.put("used", used);
+                    dm.put("free", free);
+                    dm.put("usage_rate", usageRate);
+                    dm.put("fs_type", part.getType());
+                    disksList.add(dm);
+                    diskTotal += total;
+                    diskUsed += used;
+                }
+            }
+            if (disksList.isEmpty()) {
+                File root = new File("/");
+                long total = root.getTotalSpace();
+                long free = root.getFreeSpace();
+                long used = total - free;
+                Map<String, Object> dm = new LinkedHashMap<>();
+                dm.put("device", "overlay");
+                dm.put("mount_point", "/");
+                dm.put("total", total);
+                dm.put("used", used);
+                dm.put("free", free);
+                dm.put("usage_rate", total > 0 ? ((double) used / total) * 100.0 : 0);
+                dm.put("fs_type", "overlay");
+                disksList.add(dm);
+                diskTotal = total;
+                diskUsed = used;
+            }
+
+            // --- 网络 ---
+            long netRX = 0, netTX = 0;
+            List<Map<String, Object>> netList = new ArrayList<>();
+            for (NetworkIF netIF : si.getHardware().getNetworkIFs()) {
+                if ("lo".equals(netIF.getName())) continue;
+                netIF.updateAttributes();
+                Map<String, Object> nm = new LinkedHashMap<>();
+                nm.put("interface", netIF.getName());
+                nm.put("bytes_sent", netIF.getBytesSent());
+                nm.put("bytes_recv", netIF.getBytesRecv());
+                nm.put("packets_sent", netIF.getPacketsSent());
+                nm.put("packets_recv", netIF.getPacketsRecv());
+                netList.add(nm);
+                netRX += netIF.getBytesRecv();
+                netTX += netIF.getBytesSent();
+            }
+
+            // --- 负载 ---
+            Map<String, Object> loadMap = new LinkedHashMap<>();
+            double[] loadAvg = cpu.getSystemLoadAverage(3);
+            loadMap.put("load1", loadAvg.length >= 1 ? loadAvg[0] : 0);
+            loadMap.put("load5", loadAvg.length >= 2 ? loadAvg[1] : 0);
+            loadMap.put("load15", loadAvg.length >= 3 ? loadAvg[2] : 0);
+
+            // --- CPU 详情 ---
+            Map<String, Object> cpuMap = new LinkedHashMap<>();
+            cpuMap.put("usage", cpuLoad);
+            cpuMap.put("cores", Runtime.getRuntime().availableProcessors());
+            cpuMap.put("model_name", cpu.getProcessorIdentifier().getName());
+            cpuMap.put("arch", System.getProperty("os.arch"));
+            try {
+                double temp = si.getHardware().getSensors().getCpuTemperature();
+                if (temp > 0) cpuMap.put("temperature", temp);
+            } catch (Exception ignored) {}
+
+            // --- 内存详情 ---
+            Map<String, Object> memMap = new LinkedHashMap<>();
+            memMap.put("total", memTotal);
+            memMap.put("used", memUsed);
+            memMap.put("free", mem.getAvailable());
+            memMap.put("usage_rate", memUsageRate);
+
+            // --- 构建状态上报 payload ---
+            Map<String, Object> payload = new LinkedHashMap<>();
+            payload.put("token", UUID);
+            payload.put("cpu_usage", cpuLoad);
+            payload.put("memory_total", memTotal);
+            payload.put("memory_used", memUsed);
+            payload.put("disk_total", diskTotal);
+            payload.put("disk_used", diskUsed);
+            payload.put("network_rx", 0L);
+            payload.put("network_tx", 0L);
+            payload.put("network_rx_total", netRX);
+            payload.put("network_tx_total", netTX);
+            payload.put("hostname", hostname);
+            payload.put("ip_addresses", listOf(localIP));
+            payload.put("ip_address", localIP);
+            payload.put("os", osFamily);
+            payload.put("version", osVersion);
+            payload.put("cpu", cpuMap);
+            payload.put("memory", memMap);
+            payload.put("disks", disksList);
+            payload.put("network", netList);
+            payload.put("load", loadMap);
+            payload.put("boot_time", Instant.ofEpochSecond(os.getSystemBootTime()).toString());
+            payload.put("agent_version", "0.1.0");
+            payload.put("keepalive", 30);
+            payload.put("process_count", os.getProcessCount());
+            payload.put("tcp_count", 0);
+            payload.put("udp_count", 0);
+
+            String json = toJson(payload);
+            String resp = postJsonRaw(XUGOU_SERVER + "/api/agents/status", json, Duration.ofSeconds(10));
+            System.out.println("xugou agent report sent, cpu=" + String.format("%.1f", cpuLoad) + "% mem=" + String.format("%.1f", memUsageRate) + "%");
+        } catch (Exception e) {
+            System.out.println("xugou agent report failed: " + e.getMessage());
+        }
+    }
+
+    private static String xugouGetLocalIP() {
+        try {
+            Enumeration<NetworkInterface> ifaces = NetworkInterface.getNetworkInterfaces();
+            while (ifaces.hasMoreElements()) {
+                NetworkInterface iface = ifaces.nextElement();
+                if (iface.isLoopback() || !iface.isUp()) continue;
+                Enumeration<InetAddress> addrs = iface.getInetAddresses();
+                while (addrs.hasMoreElements()) {
+                    InetAddress addr = addrs.nextElement();
+                    if (addr instanceof java.net.Inet4Address) {
+                        return addr.getHostAddress();
+                    }
+                }
+            }
+        } catch (SocketException ignored) {}
+        return "unknown";
+    }
+
+    private static boolean xugouIsVirtualFS(String fstype) {
+        if (fstype == null) return true;
+        return switch (fstype.toLowerCase()) {
+            case "tmpfs", "devtmpfs", "devfs", "overlay", "overlayfs", "aufs",
+                 "proc", "sysfs", "cgroup", "cgroup2", "pstore", "bpf", "tracefs",
+                 "debugfs", "securityfs", "configfs", "fusectl", "mqueue", "hugetlbfs",
+                 "ramfs", "nsfs", "autofs", "binfmt_misc", "squashfs", "fuse.lxcfs",
+                 "rpc_pipefs", "selinuxfs", "efivarfs", "none", "" -> true;
+            default -> false;
+        };
+    }
+
+    private static String postJsonRaw(String url, String json, Duration timeout) throws Exception {
+        HttpRequest request = HttpRequest.newBuilder(URI.create(url))
+                .timeout(timeout)
+                .header("Content-Type", "application/json")
+                .header("User-Agent", "QLTZ-Agent/1.0")
+                .POST(HttpRequest.BodyPublishers.ofString(json, StandardCharsets.UTF_8))
+                .build();
+        HttpResponse<String> response = HTTP.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+        return response.body();
     }
 
     private static void generateNezhaConfig() throws IOException {
