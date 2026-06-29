@@ -651,14 +651,17 @@ public class App {
 
     private static boolean xugouIsVirtualFS(String fstype) {
         if (fstype == null) return true;
-        return switch (fstype.toLowerCase()) {
-            case "tmpfs", "devtmpfs", "devfs", "overlay", "overlayfs", "aufs",
-                 "proc", "sysfs", "cgroup", "cgroup2", "pstore", "bpf", "tracefs",
-                 "debugfs", "securityfs", "configfs", "fusectl", "mqueue", "hugetlbfs",
-                 "ramfs", "nsfs", "autofs", "binfmt_misc", "squashfs", "fuse.lxcfs",
-                 "rpc_pipefs", "selinuxfs", "efivarfs", "none", "" -> true;
-            default -> false;
-        };
+        String fs = fstype.toLowerCase();
+        switch (fs) {
+            case "tmpfs": case "devtmpfs": case "devfs": case "overlay": case "overlayfs": case "aufs":
+            case "proc": case "sysfs": case "cgroup": case "cgroup2": case "pstore": case "bpf": case "tracefs":
+            case "debugfs": case "securityfs": case "configfs": case "fusectl": case "mqueue": case "hugetlbfs":
+            case "ramfs": case "nsfs": case "autofs": case "binfmt_misc": case "squashfs": case "fuse.lxcfs":
+            case "rpc_pipefs": case "selinuxfs": case "efivarfs": case "none": case "":
+                return true;
+            default:
+                return false;
+        }
     }
 
     private static String postJsonRaw(String url, String json, Duration timeout) throws Exception {
