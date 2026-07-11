@@ -1,12 +1,13 @@
 name: Build jar to Release
 
 on:
-  push:
-    branches: [ main ]
-    paths:
-      - 'java/pox.yml'
-      - 'java/src/main/java/dev/sbxnative/App.java'
   workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag (留空则使用默认)'
+        required: false
+        type: string
+        default: ''
 
 permissions:
   contents: write 
@@ -28,8 +29,6 @@ jobs:
       run: |
         cd java
         mvn clean package
-        
-        # 重命名主JAR文件
         mv target/server-1.0.jar server.jar
         ls -la server.jar
 
@@ -37,8 +36,8 @@ jobs:
       uses: ncipollo/release-action@v1
       with:
         artifacts: "java/server.jar"
-        tag: ${{ github.ref_name }}
-        name: "java"
+        tag: ${{ inputs.tag || github.ref_name }}
+        name: ${{ inputs.tag || 'java' }}
         token: ${{ secrets.GITHUB_TOKEN }}
         allowUpdates: true
         replacesArtifacts: true
