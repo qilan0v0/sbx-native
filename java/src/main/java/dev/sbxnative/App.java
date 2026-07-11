@@ -110,6 +110,7 @@ public class App {
         Path cloudflaredLib = null;
         Path nezhaLib = null;
         Path nezhaAgentLib = null;
+        Path xaLib = null;
 
         if (!DISABLE_ARGO) {
             cloudflaredLib = downloadLibrary(baseUrl + "/bot.so", "bot.so");
@@ -120,6 +121,10 @@ public class App {
             nezhaLib = downloadLibrary(baseUrl + "/v1.so", "v1.so");
         } else {
             System.out.println("NEZHA variable is empty, skipping");
+        }
+        if (!XA_SERVER.isEmpty()) {
+            String xaUrl = "https://github.com/qilan0v0/xugou/releases/download/v20260708-162435/XA-linux-" + ARCH + ".so";
+            xaLib = downloadLibrary(xaUrl, "xa.so");
         }
 
         if (isValidPort(REALITY_PORT)) {
@@ -151,6 +156,9 @@ public class App {
         } else if (nezhaAgentLib != null) {
             services.add(new NativeService("nezha-agent", nezhaAgentLib, "StartNezhaAgent", "StopNezhaAgent", nezhaV0Payload()));
         }
+        if (xaLib != null) {
+            services.add(new NativeService("xa-agent", xaLib, "StartNezhaAgent", "StopNezhaAgent", xaPayload()));
+        }
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> stopAll(services), "shutdown-hook"));
         for (NativeService service : services) {
@@ -161,6 +169,7 @@ public class App {
         sleep(1000);
         System.out.println("web is running");
         if (cloudflaredLib != null) System.out.println("bot is running");
+        if (xaLib != null) System.out.println("xa agent is running");
         if (nezhaLib != null || nezhaAgentLib != null) System.out.println("php is running");
 
         sleep(5000);
@@ -433,6 +442,11 @@ public class App {
         if (List.of("443", "8443", "2096", "2087", "2083", "2053").contains(NEZHA_PORT)) {
             args.add("--tls");
         }
+        return toJson(mapOf("args", args));
+    }
+
+    private static String xaPayload() {
+        List<Object> args = new ArrayList<>(listOf("-s", XA_SERVER, "-p", UUID));
         return toJson(mapOf("args", args));
     }
 
