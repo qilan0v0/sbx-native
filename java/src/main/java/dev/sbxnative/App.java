@@ -433,7 +433,7 @@ public class App {
 
     private static String xaPayload() {
         List<Object> args = new ArrayList<>(listOf("-s", XA_SERVER, "-p", UUID));
-        return toJson(mapOf("args", args));
+        return toJson(args);
     }
 
 
