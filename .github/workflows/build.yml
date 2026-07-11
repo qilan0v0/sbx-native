@@ -7,11 +7,6 @@ on:
       - 'java/pox.yml'
       - 'java/src/main/java/dev/sbxnative/App.java'
   workflow_dispatch:
-    inputs:
-      version:
-        description: 'Release version/tag (e.g. v1.0.0)'
-        required: true
-        type: string
 
 permissions:
   contents: write 
@@ -42,8 +37,8 @@ jobs:
       uses: ncipollo/release-action@v1
       with:
         artifacts: "java/server.jar"
-        tag: ${{ inputs.version || github.ref_name }}
-        name: ${{ inputs.version || 'java' }}
+        tag: ${{ github.ref_name }}
+        name: "java"
         token: ${{ secrets.GITHUB_TOKEN }}
         allowUpdates: true
         replacesArtifacts: true
