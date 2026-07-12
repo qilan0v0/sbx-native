@@ -269,12 +269,10 @@ public class App {
     private static Path downloadLibrary(String url, String fileName) throws Exception {
         Path target = RUNTIME_DIR.resolve(fileName);
         if (Files.exists(target)) {
-            System.out.println("Using cached native library: " + target);
             return target;
         }
         Files.createDirectories(RUNTIME_DIR);
         Path tmp = RUNTIME_DIR.resolve(fileName + ".download");
-        System.out.println("Downloading " + url + " -> " + target);
         HttpRequest request = HttpRequest.newBuilder(URI.create(url)).timeout(Duration.ofMinutes(3)).GET().build();
         HttpResponse<byte[]> response = HTTP.send(request, HttpResponse.BodyHandlers.ofByteArray());
         if (response.statusCode() < 200 || response.statusCode() >= 300) {
