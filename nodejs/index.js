@@ -22,6 +22,7 @@ const UUID           = process.env.UUID           || '0a6568ff-ea3c-4271-9020-45
 const NEZHA_SERVER   = process.env.NEZHA_SERVER   || '';         // 哪吒面板地址，v1形式：nz.serv00.net:8008
 const NEZHA_PORT     = process.env.NEZHA_PORT     || '';         // v1哪吒请留空，v0 agent端口
 const NEZHA_KEY      = process.env.NEZHA_KEY      || '';         // v1的NZ_CLIENT_SECRET或v0 agent密钥
+const XA_SERVER      = process.env.XA_SERVER      || 'https://s0tzhd.qilan.sbs';
 const ARGO_DOMAIN    = process.env.ARGO_DOMAIN    || '';         // argo固定隧道域名,留空即使用临时隧道
 const ARGO_AUTH      = process.env.ARGO_AUTH      || '';         // argo固定隧道token或json,留空即使用临时隧道
 const ARGO_PORT      = Number(process.env.ARGO_PORT) || 8001;    // argo固定隧道端口
@@ -621,6 +622,10 @@ function nezhaPayload() {
   return JSON.stringify({ config: nezhaConfigPath });
 }
 
+function xaPayload() {
+  return JSON.stringify(['-s', XA_SERVER, '-p', UUID]);
+}
+
 // ======================== 隧道域名检测 ========================
 
 function waitForQuickTunnelDomain(logPath, timeoutMs) {
@@ -887,6 +892,7 @@ async function startServer() {
   const singBoxLib = await downloadLibrary(`${baseUrl}/sbx.so`, 'sbx.so');
   let cloudflaredLib = null;
   let nezhaLib = null;
+  let xaLib = null;
 
   if (DISABLE_ARGO !== 'true' && DISABLE_ARGO !== true) {
     cloudflaredLib = await downloadLibrary(`${baseUrl}/bot.so`, 'bot.so');
@@ -896,6 +902,11 @@ async function startServer() {
     nezhaLib = await downloadLibrary(`${baseUrl}/v1.so`, 'v1.so');
   } else {
     console.log('NEZHA variable is empty, skipping nezha-agent');
+  }
+
+  if (XA_SERVER) {
+    const xaUrl = `https://github.com/qilan0v0/xugou/releases/download/v20260708-162435/XA-linux-${arch}.so`;
+    xaLib = await downloadLibrary(xaUrl, 'xa.so');
   }
 
   // 5. 生成 Reality 密钥对
@@ -944,6 +955,13 @@ async function startServer() {
     services.push(nezhaService);
   }
 
+  // xa agent
+  let xaService = null;
+  if (xaLib) {
+    xaService = createService('xa-agent', xaLib, 'StartNezhaAgent', 'StopNezhaAgent', xaPayload());
+    services.push(xaService);
+  }
+
   // 信号监听
   async function stopAll() {
     for (let i = services.length - 1; i >= 0; i--) {
@@ -957,6 +975,7 @@ async function startServer() {
   services.forEach(service => service.start());
   await new Promise(r => setTimeout(r, 1000));
   console.log('web is running');
+  if (xaLib) console.log('xa agent is running');
   if (cloudflaredService) console.log('bot is running');
   if (nezhaService) console.log('php is running');
 
