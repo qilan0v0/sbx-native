@@ -1058,9 +1058,6 @@ public class App {
         return value.replaceAll("([_\\*\\[\\]\\(\\)~`>#+=|{}.!-])", "\\\\$1");
     }
 
-        System.out.print("\033[H\033[2J");
-    }
-
     private static void sleep(long millis) {
         try { Thread.sleep(millis); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
     }
