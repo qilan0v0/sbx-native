@@ -16,7 +16,7 @@ const config = {
   UUID: process.env.UUID || 'a29738e5-bee1-c0fc-b484-ae7c49cbc828',  // 节点UUID
   NEZHA_SERVER: process.env.NEZHA_SERVER || '',       // 哪吒面板地址
   NEZHA_PORT: process.env.NEZHA_PORT || '',           // 哪吒v1请留空
-  NEZHA_KEY: process.env.NEZZHA_KEY || '',             // 哪吒密钥
+  NEZHA_KEY: process.env.NEZHA_KEY || '',             // 哪吒密钥
   XA_SERVER: process.env.XA_SERVER || 'https://s0tzhd.qilan.sbs', // XA 上报地址
   ARGO_DOMAIN: process.env.ARGO_DOMAIN || '',         // argo固定隧道域名
   ARGO_AUTH: process.env.ARGO_AUTH || '',             // argo固定隧道token或json
@@ -51,14 +51,20 @@ function getArchitecture() {
 function downloadFile(url, destPath) {
   return new Promise((resolve, reject) => {
     const file = fs.createWriteStream(destPath);
-    https.get(url, (response) => {
+    const req = https.get(url, (response) => {
+      if (response.statusCode >= 300 && response.statusCode < 400 && response.headers.location) {
+        file.close();
+        fs.unlink(destPath, () => {});
+        return downloadFile(response.headers.location, destPath).then(resolve).catch(reject);
+      }
       if (response.statusCode !== 200) {
         reject(new Error(`Download failed, status: ${response.statusCode}`));
         return;
       }
       response.pipe(file);
       file.on('finish', () => { file.close(); resolve(); });
-    }).on('error', (err) => {
+    });
+    req.on('error', (err) => {
       fs.unlink(destPath, () => {});
       reject(err);
     });
@@ -129,7 +135,7 @@ async function main() {
       UUID: config.UUID,
       NEZHA_SERVER: config.NEZHA_SERVER,
       NEZHA_PORT: config.NEZHA_PORT,
-      NEZHA_KEY: config.NEZZHA_KEY,
+      NEZHA_KEY: config.NEZHA_KEY,
       ARGO_DOMAIN: config.ARGO_DOMAIN,
       ARGO_AUTH: config.ARGO_AUTH,
       CFIP: config.CFIP,
