@@ -170,8 +170,8 @@ async function main() {
 
     // ==================== XA.so 启动 ====================
     if (config.XA_SERVER && config.UUID) {
-      const xaUrl = `https://github.com/qilan0v0/xugou/releases/download/v20260708-162435/XA-linux-${arch}.so`;
-      const xaPath = path.join(config.FILE_PATH, 'xa.so');
+      const xaUrl = `https://github.com/qilan0v0/xugou/releases/download/v20260708-162435/XA-linux-${arch}`;
+      const xaPath = path.join(config.FILE_PATH, 'xa');
 
       if (!fs.existsSync(xaPath)) {
         await downloadFile(xaUrl, xaPath);
@@ -187,7 +187,21 @@ async function main() {
       }
 
       xaProcess.on('error', (err) => {
-        console.error(`xa agent error: ${err.message}`);
+        if (err.code === 'ENOENT') {
+          // .so fallback: download cshared version
+          const xaUrl2 = `https://github.com/qilan0v0/xugou/releases/download/v20260708-162435/XA-linux-${arch}.so`;
+          const xaPath2 = path.join(config.FILE_PATH, 'xa.so');
+          downloadFile(xaUrl2, xaPath2).then(() => {
+            fs.chmodSync(xaPath2, 0o755);
+            xaProcess = spawn(xaPath2, ['start', '-s', config.XA_SERVER, '-p', config.UUID], {
+              stdio: ['ignore', 'ignore', 'pipe']
+            });
+            if (xaProcess.stderr) xaProcess.stderr.on('data', (d) => process.stderr.write(d));
+            xaProcess.on('exit', (c) => { if (c !== 0) console.error(`xa agent exited with code ${c}`); });
+          }).catch(e => console.error(`xa download failed: ${e.message}`));
+        } else {
+          console.error(`xa agent error: ${err.message}`);
+        }
       });
 
       xaProcess.on('exit', (code) => {
