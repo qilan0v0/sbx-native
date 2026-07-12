@@ -661,8 +661,11 @@ public class App {
             exchange.close();
         });
         server.start();
+        return server;
+    }
+
+    private static Optional<String> extractDomain() {
         if (!ARGO_AUTH.isEmpty() && !ARGO_DOMAIN.isEmpty()) {
-            System.out.println("ARGO_DOMAIN: " + ARGO_DOMAIN);
             return Optional.of(ARGO_DOMAIN);
         }
         System.out.println("Waiting for quick tunnel domain in log...");
