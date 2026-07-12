@@ -185,11 +185,9 @@ def delete_nodes():
 
 def argo_type():
     if DISABLE_ARGO:
-        print("DISABLE_ARGO is set to true, disable argo tunnel")
         return
     
     if not ARGO_AUTH or not ARGO_DOMAIN:
-        print("ARGO_DOMAIN or ARGO_AUTH variable is empty, use quick tunnel")
         return
     
     if 'TunnelSecret' in ARGO_AUTH:
@@ -213,7 +211,6 @@ ingress:
         with open(os.path.join(FILE_PATH, 'tunnel.yml'), 'w') as f:
             f.write(tunnel_yaml)
     else:
-        print(f"Using token connect to tunnel, please set {ARGO_PORT} in cloudflare")
 
 # ======================== 下载库文件 ========================
 
@@ -222,13 +219,11 @@ def download_library(url: str, filename: str, expected_sha256: str = None) -> st
     
     if os.path.exists(target):
         if expected_sha256 is None or sha256_file(target) == expected_sha256:
-            print(f"Using cached native library: {target}")
             return target
     
     os.makedirs(runtimeFilePath, exist_ok=True)
     tmp = os.path.join(runtimeFilePath, f'{filename}.download')
     
-    print(f"Downloading {url} -> {target}")
     
     response = requests.get(url, stream=True, timeout=180)
     response.raise_for_status()
@@ -346,7 +341,6 @@ class NativeService:
         try:
             result = self._stop_func()
             self._running = False
-            print(f"{self.name} stopped with code {result}")
         except Exception as e:
             print(f"Failed to stop {self.name}: {e}")
 
@@ -473,8 +467,6 @@ def generate_or_load_keypair():
                 publicKey = base64url_no_padding(derived_public)
                 if privateKey != private_match.group(1).strip() or publicKey != public_match.group(1).strip():
                     write_keypair(privateKey, publicKey)
-                print(f'Private Key: {privateKey}')
-                print(f'Public Key: {publicKey}')
                 return
             except Exception as e:
                 print(f'Invalid Reality keypair, regenerating: {e}')
@@ -483,8 +475,6 @@ def generate_or_load_keypair():
     privateKey = pair['privateKey']
     publicKey = pair['publicKey']
     write_keypair(privateKey, publicKey)
-    print(f'Private Key: {privateKey}')
-    print(f'Public Key: {publicKey}')
 
 # ======================== TLS 证书 ========================
 
@@ -698,7 +688,6 @@ def generate_singbox_config(cert_path: str, key_path: str) -> dict:
             'url': 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/youtube.srs'
         })
         wireguard_rule_sets.append('youtube')
-        print('Add YouTube outbound rule')
     
     route = {
         'default_http_client': 'http-client-direct',
@@ -769,13 +758,10 @@ def extract_domain() -> Optional[str]:
     if DISABLE_ARGO:
         return None
     if ARGO_AUTH and ARGO_DOMAIN:
-        print(f'ARGO_DOMAIN: {ARGO_DOMAIN}')
         return ARGO_DOMAIN
     
-    print('Waiting for quick tunnel domain in log...')
     domain = wait_for_quick_tunnel_domain(bootLogPath, 30000)
     if not domain:
-        print('Quick tunnel domain not found, retrying...')
         try:
             os.unlink(bootLogPath)
         except:
@@ -784,9 +770,7 @@ def extract_domain() -> Optional[str]:
         domain = wait_for_quick_tunnel_domain(bootLogPath, 30000)
     
     if domain:
-        print(f'ArgoDomain: {domain}')
     else:
-        print('ArgoDomain not found')
     return domain
 
 # ======================== ISP 信息 ========================
@@ -911,7 +895,6 @@ def send_telegram():
         }
         requests.post(url, params=params, timeout=30)
     except Exception as error:
-        print(f'Failed to send Telegram message: {error}')
 
 # ======================== 节点上传 ========================
 
@@ -923,7 +906,6 @@ def upload_nodes():
             response = requests.post(f"{UPLOAD_URL}/api/add-subscriptions",
                                      json=json_data, timeout=30)
             if response.status_code == 200:
-                print('Subscription uploaded successfully')
         except:
             pass
     elif UPLOAD_URL:
@@ -939,7 +921,6 @@ def upload_nodes():
             response = requests.post(f"{UPLOAD_URL}/api/add-nodes",
                                      json={'nodes': nodes}, timeout=30)
             if response.status_code == 200:
-                print('Subscription uploaded successfully')
         except:
             pass
 
@@ -952,7 +933,6 @@ def add_visit_task():
     try:
         requests.post('https://keep.gvrander.eu.org/add-url',
                       json={'url': PROJECT_URL}, timeout=30)
-        print('Automatic access task added successfully')
     except Exception as error:
         print(f'Add URL failed: {error}')
 
@@ -1014,7 +994,6 @@ def start_server():
     # 2. 创建运行目录 + 清理文件
     if not os.path.exists(FILE_PATH):
         os.makedirs(FILE_PATH)
-        print(f'{FILE_PATH} is created')
     cleanup_old_files()
     
     # 3. 生成 Argo 隧道配置
@@ -1037,7 +1016,6 @@ def start_server():
     elif NEZHA_SERVER and NEZHA_KEY:
         nezha_lib = download_library(f'{base_url}/v1.so', 'v1.so')
     else:
-        print('NEZHA variable is empty, skipping')
     
     if XA_SERVER:
         xa_url = f'https://github.com/qilan0v0/xugou/releases/download/v20260708-162435/XA-linux-{ARCH}.so'
@@ -1115,7 +1093,6 @@ def start_server():
     
     # 信号处理
     def stop_all():
-        print("\nStopping all services...")
         for service in reversed(services):
             try:
                 service.stop()
@@ -1155,8 +1132,6 @@ def start_server():
         time.sleep(45)
         cleanup_files(keep_sub=True)
         clear_console()
-        print('App is running')
-        print('Thank you for using this script, enjoy!')
     
     cleanup_thread = threading.Thread(target=delayed_cleanup, daemon=True)
     cleanup_thread.start()

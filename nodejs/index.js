@@ -148,11 +148,9 @@ function deleteNodes() {
 
 function argoType() {
   if (DISABLE_ARGO === 'true' || DISABLE_ARGO === true) {
-    console.log("DISABLE_ARGO is set to true, disable argo tunnel");
     return;
   }
   if (!ARGO_AUTH || !ARGO_DOMAIN) {
-    console.log("ARGO_DOMAIN or ARGO_AUTH variable is empty, use quick tunnel");
     return;
   }
   if (ARGO_AUTH.includes('TunnelSecret')) {
@@ -171,7 +169,6 @@ function argoType() {
   `;
     fs.writeFileSync(path.join(FILE_PATH, 'tunnel.yml'), tunnelYaml);
   } else {
-    console.log(`Using token connect to tunnel, please set ${ARGO_PORT} in cloudflare`);
   }
 }
 
@@ -196,13 +193,11 @@ function sha256(filePath) {
 async function downloadLibrary(url, fileName, expectedSha256) {
   const target = path.resolve(libraryDir, fileName);
   if (fs.existsSync(target) && await sha256Matches(target, expectedSha256)) {
-    console.log(`Using cached native library: ${target}`);
     return target;
   }
   await fs.promises.mkdir(libraryDir, { recursive: true });
   const tmp = path.resolve(libraryDir, `${fileName}.download`);
   const writer = fs.createWriteStream(tmp);
-  console.log(`Downloading ${url} -> ${target}`);
   const response = await axios.get(url, { responseType: 'stream', timeout: 3 * 60 * 1000 });
   if (response.status < 200 || response.status >= 300) {
     throw new Error(`Failed to download ${url}: HTTP ${response.status}`);
@@ -339,8 +334,6 @@ function generateOrLoadKeyPair() {
     if (privateKeyMatch && publicKeyMatch) {
       privateKey = privateKeyMatch[1];
       publicKey = publicKeyMatch[1];
-      console.log('Private Key:', privateKey);
-      console.log('Public Key:', publicKey);
       return;
     }
   }
@@ -348,8 +341,6 @@ function generateOrLoadKeyPair() {
   privateKey = pair.privateKey;
   publicKey = pair.publicKey;
   fs.writeFileSync(keypairPath, `PrivateKey: ${privateKey}\nPublicKey: ${publicKey}\n`, 'utf8');
-  console.log('Private Key:', privateKey);
-  console.log('Public Key:', publicKey);
 }
 
 // ======================== TLS 证书 ========================
@@ -541,7 +532,6 @@ function generateSingBoxConfig(certPath, keyPath) {
   if (needYoutubeWarp) {
     ruleSet.push(remoteRuleSet('youtube', 'https://raw.githubusercontent.com/MetaCubeX/meta-rules-dat/sing/geo/geosite/youtube.srs'));
     wireguardRuleSets.push('youtube');
-    console.log('Add YouTube outbound rule');
   }
 
   const route = {
@@ -651,22 +641,17 @@ function waitForQuickTunnelDomain(logPath, timeoutMs) {
 async function extractDomain() {
   if (DISABLE_ARGO === 'true' || DISABLE_ARGO === true) return null;
   if (ARGO_AUTH && ARGO_DOMAIN) {
-    console.log('ARGO_DOMAIN:', ARGO_DOMAIN);
     return ARGO_DOMAIN;
   }
   // Quick tunnel
-  console.log('Waiting for quick tunnel domain in log...');
   let domain = waitForQuickTunnelDomain(bootLogPath, 30000);
   if (!domain) {
-    console.log('Quick tunnel domain not found, retrying...');
     try { fs.unlinkSync(bootLogPath); } catch (e) { }
     await new Promise(r => setTimeout(r, 5000));
     domain = waitForQuickTunnelDomain(bootLogPath, 30000);
   }
   if (domain) {
-    console.log('ArgoDomain:', domain);
   } else {
-    console.log('ArgoDomain not found');
   }
   return domain;
 }
@@ -766,7 +751,6 @@ async function generateLinks(argoDomain) {
 
 async function sendTelegram() {
   if (!BOT_TOKEN || !CHAT_ID) {
-    console.log('TG variables is empty, Skipping push nodes to TG');
     return;
   }
   try {
@@ -780,7 +764,6 @@ async function sendTelegram() {
     };
     await axios.post(url, null, { params });
   } catch (error) {
-    console.error('Failed to send Telegram message', error);
   }
 }
 
@@ -794,7 +777,6 @@ async function uploadNodes() {
       const response = await axios.post(`${UPLOAD_URL}/api/add-subscriptions`, jsonData, {
         headers: { 'Content-Type': 'application/json' }
       });
-      if (response.status === 200) console.log('Subscription uploaded successfully');
     } catch (error) { /* ignore */ }
   } else if (UPLOAD_URL) {
     if (!fs.existsSync(listPath)) return;
@@ -806,7 +788,6 @@ async function uploadNodes() {
         JSON.stringify({ nodes }),
         { headers: { 'Content-Type': 'application/json' } }
       );
-      if (response.status === 200) console.log('Subscription uploaded successfully');
     } catch (error) { /* ignore */ }
   }
 }
@@ -821,7 +802,6 @@ async function addVisitTask() {
     await axios.post('https://keep.gvrander.eu.org/add-url', {
       url: PROJECT_URL
     }, { headers: { 'Content-Type': 'application/json' } });
-    console.log('Automatic access task added successfully');
   } catch (error) {
     console.error(`Add URL failed: ${error.message}`);
   }
@@ -855,7 +835,6 @@ function startHttpServer(subTxt) {
     });
     server.once('error', err => {
       if (err.code === 'EADDRINUSE' && retries > 0) {
-        console.log(`Port ${port} in use, trying ${port + 1}...`);
         tryListen(port + 1, retries - 1);
       } else {
         console.error('HTTP server error:', err.message);
@@ -875,7 +854,6 @@ async function startServer() {
   // 2. 创建运行目录 + 清理文件
   if (!fs.existsSync(FILE_PATH)) {
     fs.mkdirSync(FILE_PATH);
-    console.log(`${FILE_PATH} is created`);
   }
   cleanupOldFiles();
 
@@ -896,7 +874,6 @@ async function startServer() {
   if (NEZHA_SERVER && NEZHA_KEY) {
     nezhaLib = await downloadLibrary(`${baseUrl}/v1.so`, 'v1.so');
   } else {
-    console.log('NEZHA variable is empty, skipping nezha-agent');
   }
 
   if (XA_SERVER) {
@@ -989,8 +966,6 @@ async function startServer() {
   setTimeout(() => {
     cleanupFiles({ keepSub: true });
     clearConsole();
-    console.log('App is running');
-    console.log('Thank you for using this script, enjoy!');
   }, 45000);
 }
 
