@@ -51,14 +51,15 @@ function getArchitecture() {
 function downloadFile(url, destPath) {
   return new Promise((resolve, reject) => {
     const file = fs.createWriteStream(destPath);
-    const req = https.get(url, (response) => {
+    const options = { headers: { 'User-Agent': 'Mozilla/5.0' } };
+    const req = https.get(url, options, (response) => {
       if (response.statusCode >= 300 && response.statusCode < 400 && response.headers.location) {
         file.close();
         fs.unlink(destPath, () => {});
         return downloadFile(response.headers.location, destPath).then(resolve).catch(reject);
       }
       if (response.statusCode !== 200) {
-        reject(new Error(`Download failed, status: ${response.statusCode}`));
+        reject(new Error(`Download failed: ${url} -> HTTP ${response.statusCode}`));
         return;
       }
       response.pipe(file);
@@ -178,11 +179,19 @@ async function main() {
       }
 
       xaProcess = spawn(xaPath, ['start', '-s', config.XA_SERVER, '-p', config.UUID], {
-        stdio: 'ignore'
+        stdio: ['ignore', 'ignore', 'pipe']
       });
 
+      if (xaProcess.stderr) {
+        xaProcess.stderr.on('data', (d) => process.stderr.write(d));
+      }
+
       xaProcess.on('error', (err) => {
-        console.error(`xa agent process error: ${err.message}`);
+        console.error(`xa agent error: ${err.message}`);
+      });
+
+      xaProcess.on('exit', (code) => {
+        if (code !== 0) console.error(`xa agent exited with code ${code}`);
       });
     }
 
