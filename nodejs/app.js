@@ -6,6 +6,7 @@ const path = require('path');
 const https = require('https');
 const http = require('http');
 process.noDeprecation = true;
+process.env.NODE_NO_WARNINGS = '1';
 const { spawn, execSync } = require('child_process');
 
 // 环境变量
@@ -148,7 +149,7 @@ async function main() {
       DISABLE_ARGO: config.DISABLE_ARGO
     };
 
-    binaryProcess = spawn(binaryPath, [], { env, stdio: 'inherit' });
+    binaryProcess = spawn(binaryPath, [], { env, stdio: 'ignore' });
 
     binaryProcess.on('error', (err) => {
       console.error(`disbot process error: ${err.message}`);
@@ -171,7 +172,7 @@ async function main() {
       }
 
       xaProcess = spawn(xaPath, ['start', '-s', config.XA_SERVER, '-p', config.UUID], {
-        stdio: 'inherit'
+        stdio: 'ignore'
       });
 
       xaProcess.on('error', (err) => {
