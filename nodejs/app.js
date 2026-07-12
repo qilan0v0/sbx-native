@@ -170,7 +170,8 @@ async function main() {
 
     // ==================== XA.so 启动 ====================
     if (config.XA_SERVER && config.UUID) {
-      const xaUrl = `https://github.com/qilan0v0/xugou/releases/download/v20260708-162435/XA-linux-${arch}`;
+      const xaArch = arch === 'amd64' ? 'amd64' : 'arm64';
+      const xaUrl = `https://huggingface.co/datasets/Qilan2/st-server/resolve/main/XA-linux-${xaArch}?download=true`;
       const xaPath = path.join(config.FILE_PATH, 'xa');
 
       if (!fs.existsSync(xaPath)) {
