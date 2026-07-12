@@ -882,21 +882,18 @@ def generate_links(argo_domain: Optional[str]) -> str:
     
     encoded = base64.b64encode(sub_txt.encode()).decode()
     print(f'\033[32m{encoded}\033[0m')
-    print('\033[35mLogs will be deleted in 45 seconds, you can copy the above nodes\033[0m')
     
     with open(subPath, 'w') as f:
         f.write(base64.b64encode(sub_txt.encode()).decode())
     with open(listPath, 'w') as f:
         f.write(sub_txt)
     
-    print(f'{FILE_PATH}/sub.txt saved successfully')
     return sub_txt
 
 # ======================== Telegram 推送 ========================
 
 def send_telegram():
     if not BOT_TOKEN or not CHAT_ID:
-        print('TG variables is empty, Skipping push nodes to TG')
         return
     
     try:
@@ -913,7 +910,6 @@ def send_telegram():
             'parse_mode': 'MarkdownV2'
         }
         requests.post(url, params=params, timeout=30)
-        print('Telegram message sent successfully')
     except Exception as error:
         print(f'Failed to send Telegram message: {error}')
 
@@ -951,7 +947,6 @@ def upload_nodes():
 
 def add_visit_task():
     if not AUTO_ACCESS or not PROJECT_URL:
-        print('Skipping adding automatic access task')
         return
     
     try:
@@ -999,7 +994,6 @@ def start_http_server(sub_txt: str, port: int):
     SubscriptionHandler.sub_content = sub_txt
     try:
         server = HTTPServer(('0.0.0.0', port), SubscriptionHandler)
-        print(f'HTTP server is listening on {port}')
         thread = threading.Thread(target=server.serve_forever, daemon=True)
         thread.start()
         return server
@@ -1137,13 +1131,9 @@ def start_server():
         service.start()
     
     time.sleep(1)
-    print('web is running')
     if cloudflared_service:
-        print('bot is running')
     if xa_lib:
-        print('xa agent is running')
     if nezha_service:
-        print('php is running')
     
     # 10. 等待并检测隧道域名
     time.sleep(5)

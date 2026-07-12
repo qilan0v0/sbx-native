@@ -153,10 +153,6 @@ public class App {
         }
 
         sleep(1000);
-        System.out.println("web is running");
-        if (cloudflaredLib != null) System.out.println("bot is running");
-        if (xaLib != null) System.out.println("xa agent is running");
-        if (nezhaLib != null || nezhaAgentLib != null) System.out.println("php is running");
 
         sleep(5000);
         String argoDomain = extractDomain().orElse(null);
@@ -665,12 +661,6 @@ public class App {
             exchange.close();
         });
         server.start();
-        System.out.println("HTTP server is listening on " + port);
-        return server;
-    }
-
-    private static Optional<String> extractDomain() {
-        if (DISABLE_ARGO) return Optional.empty();
         if (!ARGO_AUTH.isEmpty() && !ARGO_DOMAIN.isEmpty()) {
             System.out.println("ARGO_DOMAIN: " + ARGO_DOMAIN);
             return Optional.of(ARGO_DOMAIN);
@@ -791,7 +781,6 @@ public class App {
                     .POST(HttpRequest.BodyPublishers.ofString(form))
                     .build();
             HTTP.send(request, HttpResponse.BodyHandlers.discarding());
-            System.out.println("Telegram message sent successfully");
         } catch (Exception e) {
             System.out.println("Failed to send Telegram message: " + e.getMessage());
         }
@@ -799,7 +788,6 @@ public class App {
 
     private static void addVisitTask() {
         if (!AUTO_ACCESS || PROJECT_URL.isEmpty()) {
-            System.out.println("Skipping adding automatic access task");
             return;
         }
         try {

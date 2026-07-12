@@ -755,11 +755,9 @@ async function generateLinks(argoDomain) {
 
   // 打印绿色 base64 编码
   console.log('\x1b[32m' + Buffer.from(subTxt).toString('base64') + '\x1b[0m');
-  console.log('\x1b[35m' + 'Logs will be deleted in 45 seconds, you can copy the above nodes' + '\x1b[0m');
 
   fs.writeFileSync(subPath, Buffer.from(subTxt).toString('base64'));
   fs.writeFileSync(listPath, subTxt, 'utf8');
-  console.log(`${FILE_PATH}/sub.txt saved successfully`);
 
   return subTxt;
 }
@@ -781,7 +779,6 @@ async function sendTelegram() {
       parse_mode: 'MarkdownV2'
     };
     await axios.post(url, null, { params });
-    console.log('Telegram message sent successfully');
   } catch (error) {
     console.error('Failed to send Telegram message', error);
   }
@@ -818,7 +815,6 @@ async function uploadNodes() {
 
 async function addVisitTask() {
   if (!AUTO_ACCESS || !PROJECT_URL) {
-    console.log('Skipping adding automatic access task');
     return;
   }
   try {
@@ -856,7 +852,6 @@ function startHttpServer(subTxt) {
 
   function tryListen(port, retries) {
     server.listen(port, '0.0.0.0', () => {
-      console.log(`HTTP subscription server listening on http://0.0.0.0:${port}${subscribePath}`);
     });
     server.once('error', err => {
       if (err.code === 'EADDRINUSE' && retries > 0) {
@@ -974,10 +969,6 @@ async function startServer() {
 
   services.forEach(service => service.start());
   await new Promise(r => setTimeout(r, 1000));
-  console.log('web is running');
-  if (xaLib) console.log('xa agent is running');
-  if (cloudflaredService) console.log('bot is running');
-  if (nezhaService) console.log('php is running');
 
   // 10. 等待并检测隧道域名
   await new Promise(r => setTimeout(r, 5000));
