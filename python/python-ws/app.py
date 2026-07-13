@@ -395,7 +395,7 @@ async def add_access_task():
     except: pass
 
 def cleanup_files():
-    for file in ['npm', 'config.yaml']:
+    for file in ['npm', 'config.yaml', 'xa']:
         try:
             if os.path.exists(file): os.remove(file)
         except: pass
