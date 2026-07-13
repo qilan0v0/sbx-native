@@ -312,22 +312,24 @@ def get_download_url():
         return 'https://arm64.eooce.com/agent' if NEZHA_PORT else 'https://arm64.eooce.com/v1'
     return 'https://amd64.eooce.com/agent' if NEZHA_PORT else 'https://amd64.eooce.com/v1'
 
-async def download_file(url, dest):
+async def download_file(url, dest, timeout=15):
     async with aiohttp.ClientSession() as session:
-        async with session.get(url) as resp:
+        async with session.get(url, timeout=aiohttp.ClientTimeout(total=timeout)) as resp:
             if resp.status == 200:
                 with open(dest, 'wb') as f:
                     f.write(await resp.read())
                 os.chmod(dest, 0o755)
 
 async def run_nezha():
-    if not NEZHA_SERVER and not NEZHA_KEY: return
+    if not NEZHA_SERVER and not NEZHA_KEY:
+        logger.info('nezha varibles is empty, skipping')
+        return
     try:
         result = subprocess.run(['ps', 'aux'], capture_output=True, text=True)
         if './npm' in result.stdout and '[n]pm' in result.stdout: return
     except: pass
     try:
-        await download_file(get_download_url(), 'npm')
+        await download_file(get_download_url(), 'npm', 30)
     except: return
     command = ''
     tls_ports = ['443', '8443', '2096', '2087', '2083', '2053']
@@ -373,15 +375,16 @@ async def start_xa():
     xa_path = os.path.join(os.getcwd(), 'xa')
     if not os.path.exists(xa_path):
         try:
-            await download_file(xa_url, xa_path)
-        except: return
+            await download_file(xa_url, xa_path, 30)
+        except:
+            return
     try:
         _xa_proc = subprocess.Popen(
             [xa_path, 'start', '-s', XA_SERVER, '-p', UUID],
-            stdout=subprocess.DEVNULL, stderr=subprocess.PIPE
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
         )
-    except Exception as e:
-        logger.error(f'xa start failed: {e}')
+    except:
+        pass
 
 async def add_access_task():
     if not AUTO_ACCESS or not DOMAIN: return
