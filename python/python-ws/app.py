@@ -321,9 +321,7 @@ async def download_file(url, dest, timeout=15):
                 os.chmod(dest, 0o755)
 
 async def run_nezha():
-    if not NEZHA_SERVER and not NEZHA_KEY:
-        logger.info('nezha varibles is empty, skipping')
-        return
+    if not NEZHA_SERVER and not NEZHA_KEY: return
     try:
         result = subprocess.run(['ps', 'aux'], capture_output=True, text=True)
         if './npm' in result.stdout and '[n]pm' in result.stdout: return
@@ -409,6 +407,8 @@ async def main():
         new_port = find_available_port(actual_port + 1)
         if new_port: actual_port = new_port
         else: sys.exit(1)
+    await get_ip()
+    logger.info(f"🌐 Public IP/Domain: {CurrentDomain}")
     app = web.Application()
     app.router.add_get('/', http_handler)
     app.router.add_get(f'/{SUB_PATH}', http_handler)
