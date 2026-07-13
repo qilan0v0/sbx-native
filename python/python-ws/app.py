@@ -417,6 +417,7 @@ async def main():
     await runner.setup()
     site = web.TCPSite(runner, '0.0.0.0', actual_port)
     await site.start()
+    logger.info(f"✅ server is running on port {actual_port}")
     asyncio.create_task(run_nezha())
     asyncio.create_task(start_xa())
     async def delayed_cleanup():
