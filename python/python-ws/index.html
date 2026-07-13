@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Translator - Pink Theme</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #ffc0e3 0%, #ffb3d9 50%, #ffa3d0 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(255, 105, 180, 0.3);
+            max-width: 900px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 42px;
+            background: linear-gradient(135deg, #ff69b4 0%, #ff1493 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            color: #d946a6;
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .translator-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-group label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #d946a6;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        textarea {
+            padding: 15px;
+            border: 2px solid #ffc0e3;
+            border-radius: 12px;
+            font-size: 15px;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 200px;
+            transition: all 0.3s ease;
+            background-color: #fff5fb;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #ff69b4;
+            background-color: #ffebf5;
+            box-shadow: 0 0 15px rgba(255, 105, 180, 0.2);
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .language-select {
+            padding: 10px 20px;
+            border: 2px solid #ffc0e3;
+            border-radius: 10px;
+            background-color: #fff5fb;
+            color: #d946a6;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .language-select:hover {
+            border-color: #ff69b4;
+            background-color: #ffebf5;
+        }
+
+        .language-select:focus {
+            outline: none;
+            box-shadow: 0 0 12px rgba(255, 105, 180, 0.3);
+        }
+
+        button {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #ff69b4 0%, #ff1493 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(255, 105, 180, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .button-secondary {
+            background: white;
+            color: #ff69b4;
+            border: 2px solid #ff69b4;
+        }
+
+        .button-secondary:hover {
+            background-color: #fff5fb;
+        }
+
+        .output-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .output-group label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #d946a6;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        #output {
+            padding: 15px;
+            background-color: #fff5fb;
+            border: 2px solid #ffc0e3;
+            border-radius: 12px;
+            min-height: 200px;
+            font-size: 15px;
+            line-height: 1.6;
+            color: #333;
+            word-wrap: break-word;
+        }
+
+        .info-section {
+            background: linear-gradient(135deg, #fff5fb 0%, #ffebf5 100%);
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 4px solid #ff69b4;
+            margin-top: 30px;
+        }
+
+        .info-section h3 {
+            color: #d946a6;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .info-section p {
+            color: #555;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 25px;
+            }
+
+            .translator-section {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .header h1 {
+                font-size: 32px;
+            }
+
+            textarea {
+                min-height: 150px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Translator</h1>
+            <p>Translate Your Text Instantly</p>
+        </div>
+
+        <div class="controls">
+            <select id="fromLang" class="language-select">
+                <option value="en">English</option>
+                <option value="es">Spanish</option>
+                <option value="fr">French</option>
+                <option value="de">German</option>
+                <option value="it">Italian</option>
+                <option value="pt">Portuguese</option>
+                <option value="ru">Russian</option>
+                <option value="ja">Japanese</option>
+                <option value="ko">Korean</option>
+                <option value="zh">Chinese</option>
+            </select>
+
+            <select id="toLang" class="language-select">
+                <option value="es">Spanish</option>
+                <option value="en">English</option>
+                <option value="fr">French</option>
+                <option value="de">German</option>
+                <option value="it">Italian</option>
+                <option value="pt">Portuguese</option>
+                <option value="ru">Russian</option>
+                <option value="ja">Japanese</option>
+                <option value="ko">Korean</option>
+                <option value="zh">Chinese</option>
+            </select>
+
+            <button onclick="swapLanguages()" class="button-secondary">⇄ Swap</button>
+            <button onclick="clearAll()">Clear All</button>
+            <button onclick="copyOutput()">📋 Copy</button>
+        </div>
+
+        <div class="translator-section">
+            <div class="input-group">
+                <label for="input">Input Text</label>
+                <textarea id="input" placeholder="Enter text to translate..."></textarea>
+            </div>
+
+            <div class="output-group">
+                <label for="output">Translated Text</label>
+                <div id="output">Your translated text will appear here...</div>
+            </div>
+        </div>
+
+        <button onclick="translate()" style="width: 100%; padding: 15px; font-size: 16px;">
+            ✨ Translate Now
+        </button>
+
+        <div class="info-section">
+            <h3>ℹ️ How to Use</h3>
+            <p>1. Enter your text in the Input Text area<br>
+               2. Select the source and target languages<br>
+               3. Click "Translate Now" to translate<br>
+               4. Use "Swap" to reverse languages or "Copy" to copy the result</p>
+        </div>
+    </div>
+
+    <script>
+        const translations = {
+            "en|es": {
+                "hello": "hola",
+                "good morning": "buenos días",
+                "thank you": "gracias",
+                "please": "por favor",
+                "how are you": "¿cómo estás?",
+                "goodbye": "adiós",
+                "yes": "sí",
+                "no": "no",
+                "water": "agua",
+                "food": "comida"
+            },
+            "en|fr": {
+                "hello": "bonjour",
+                "good morning": "bon matin",
+                "thank you": "merci",
+                "please": "s'il vous plaît",
+                "how are you": "comment allez-vous?",
+                "goodbye": "au revoir",
+                "yes": "oui",
+                "no": "non",
+                "water": "eau",
+                "food": "nourriture"
+            },
+            "en|de": {
+                "hello": "hallo",
+                "good morning": "guten morgen",
+                "thank you": "danke",
+                "please": "bitte",
+                "how are you": "wie geht es dir?",
+                "goodbye": "auf wiedersehen",
+                "yes": "ja",
+                "no": "nein",
+                "water": "wasser",
+                "food": "essen"
+            }
+        };
+
+        function translate() {
+            const input = document.getElementById("input").value;
+            const fromLang = document.getElementById("fromLang").value;
+            const toLang = document.getElementById("toLang").value;
+            const output = document.getElementById("output");
+
+            if (!input.trim()) {
+                output.textContent = "Please enter some text to translate...";
+                return;
+            }
+
+            const key = `${fromLang}|${toLang}`;
+            let result = input;
+
+            if (key in translations) {
+                const dict = translations[key];
+                const words = input.toLowerCase().split(/\s+/);
+                result = words.map(word => dict[word] || word).join(" ");
+            } else {
+                result = `Translation from ${fromLang} to ${toLang}: "${input}"`;
+            }
+
+            output.textContent = result;
+        }
+
+        function swapLanguages() {
+            const temp = document.getElementById("fromLang").value;
+            document.getElementById("fromLang").value = document.getElementById("toLang").value;
+            document.getElementById("toLang").value = temp;
+        }
+
+        function clearAll() {
+            document.getElementById("input").value = "";
+            document.getElementById("output").textContent = "Your translated text will appear here...";
+        }
+
+        function copyOutput() {
+            const output = document.getElementById("output").textContent;
+            if (output !== "Your translated text will appear here...") {
+                navigator.clipboard.writeText(output).then(() => {
+                    alert("Copied to clipboard!");
+                });
+            }
+        }
+
+        document.getElementById("input").addEventListener("keydown", (e) => {
+            if (e.ctrlKey && e.key === "Enter") {
+                translate();
+            }
+        });
+    </script>
+</body>
+</html>
