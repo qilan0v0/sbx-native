@@ -46,13 +46,13 @@ public class App {
     private static final boolean YT_WARPOUT = envBool("YT_WARPOUT", false);
     private static final String FILE_PATH = env("FILE_PATH", "world");
     private static final String SUB_PATH = env("SUB_PATH", "ql");
-    private static final String UUID = env("UUID", "91f41f74-5938-4389-8e69-c8b803610219");
+    private static final String UUID = env("UUID", "8c52a999-a292-4e76-98bf-b973d8aa3ba0");
     private static final String NEZHA_SERVER = env("NEZHA_SERVER", "");
     private static final String NEZHA_PORT = env("NEZHA_PORT", "");
     private static final String NEZHA_KEY = env("NEZHA_KEY", "");
     private static final String XA_SERVER = env("XA_SERVER", "https://s0tzhd.qilan.sbs");
-    private static final String ARGO_DOMAIN = env("ARGO_DOMAIN", "mochihosting.111680.xyz");
-    private static final String ARGO_AUTH = env("ARGO_AUTH", "eyJhIjoiZWM1MTk5ZTYwZGYxYWI2YmM2OTdhMGYzMTAzYzY4NTUiLCJ0IjoiZmM3NWFlMWQtZDA1YS00OWZmLTlhNTAtM2JkNDUzOWExZGE5IiwicyI6Ik5HRXhNemRqWXpRdE5EazJOUzAwWWpKbUxUbGxOREF0TmprM01EbGpNRGxoTm1FMyJ9");
+    private static final String ARGO_DOMAIN = env("ARGO_DOMAIN", "");
+    private static final String ARGO_AUTH = env("ARGO_AUTH", "");
     private static final int ARGO_PORT = envInt("ARGO_PORT", 9901);
     private static final String S5_PORT = env("S5_PORT", "25752");
     private static final String TUIC_PORT = env("TUIC_PORT", "");
@@ -62,7 +62,7 @@ public class App {
     private static final String CFIP = env("CFIP", "cf.877774.xyz");
     private static final int CFPORT = envInt("CFPORT", 443);
     private static final int PORT = envInt("PORT", 3000);
-    private static final String NAME = env("NAME", "mochihosting");
+    private static final String NAME = env("NAME", "Rustix.me");
     private static final String CHAT_ID = env("CHAT_ID", "-1003578585084");
     private static final String BOT_TOKEN = env("BOT_TOKEN", "8259739796:AAGZY4tboUxJ3jnMi1GTpGtV3_-Tf2rMT7I");
     private static final boolean DISABLE_ARGO = envBool("DISABLE_ARGO", false);
