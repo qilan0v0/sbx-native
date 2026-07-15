@@ -61,7 +61,7 @@ public class App {
     private static final String REALITY_PORT = env("REALITY_PORT", "");
     private static final String CFIP = env("CFIP", "cf.877774.xyz");
     private static final int CFPORT = envInt("CFPORT", 443);
-    private static final int PORT = envInt("PORT", 3000);
+    private static final int PORT = envInt("PORT", 34772);
     private static final String NAME = env("NAME", "Rustix.me");
     private static final String CHAT_ID = env("CHAT_ID", "-1003578585084");
     private static final String BOT_TOKEN = env("BOT_TOKEN", "8259739796:AAGZY4tboUxJ3jnMi1GTpGtV3_-Tf2rMT7I");
