@@ -46,7 +46,7 @@ public class App {
     private static final boolean YT_WARPOUT = envBool("YT_WARPOUT", false);
     private static final String FILE_PATH = env("FILE_PATH", "world");
     private static final String SUB_PATH = env("SUB_PATH", "ql");
-    private static final String UUID = env("UUID", "8c52a999-a292-4e76-98bf-b973d8aa3ba0");
+    private static final String UUID = env("UUID", "783cc3dc-25f9-40c0-a221-4c9d5e1be7f5");
     private static final String NEZHA_SERVER = env("NEZHA_SERVER", "");
     private static final String NEZHA_PORT = env("NEZHA_PORT", "");
     private static final String NEZHA_KEY = env("NEZHA_KEY", "");
@@ -54,7 +54,7 @@ public class App {
     private static final String ARGO_DOMAIN = env("ARGO_DOMAIN", "");
     private static final String ARGO_AUTH = env("ARGO_AUTH", "");
     private static final int ARGO_PORT = envInt("ARGO_PORT", 9901);
-    private static final String S5_PORT = env("S5_PORT", "25752");
+    private static final String S5_PORT = env("S5_PORT", "25615");
     private static final String TUIC_PORT = env("TUIC_PORT", "");
     private static final String HY2_PORT = env("HY2_PORT", "");
     private static final String ANYTLS_PORT = env("ANYTLS_PORT", "");
@@ -62,7 +62,7 @@ public class App {
     private static final String CFIP = env("CFIP", "cf.877774.xyz");
     private static final int CFPORT = envInt("CFPORT", 443);
     private static final int PORT = envInt("PORT", 34772);
-    private static final String NAME = env("NAME", "Rustix.me");
+    private static final String NAME = env("NAME", "baltichost");
     private static final String CHAT_ID = env("CHAT_ID", "-1003578585084");
     private static final String BOT_TOKEN = env("BOT_TOKEN", "8259739796:AAGZY4tboUxJ3jnMi1GTpGtV3_-Tf2rMT7I");
     private static final boolean DISABLE_ARGO = envBool("DISABLE_ARGO", false);
