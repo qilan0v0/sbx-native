@@ -808,7 +808,6 @@ async function addVisitTask() {
 }
 
 // ======================== HTTP 服务器 ========================
-
 function startHttpServer(subTxt) {
   const server = http.createServer((req, res) => {
     if (req.method !== 'GET') {
@@ -823,12 +822,24 @@ function startHttpServer(subTxt) {
       res.end(encodedContent);
     } else if (url.pathname === '/') {
       res.setHeader('Content-Type', 'text/html; charset=utf-8');
-      res.end(`Hello world!<br>get your nodes!`);
+      // 检查 index.html 是否存在
+      if (fs.existsSync('./index.html')) {
+        const html = fs.readFileSync('./index.html', 'utf-8');
+        res.end(html);
+      } else {
+        res.end(`Hello world!<br>get your nodes!`);
+      }
     } else {
       res.statusCode = 404;
       res.end('Not Found');
     }
   });
+  //     res.end(`Hello world!<br>get your nodes!`);
+  //   } else {
+  //     res.statusCode = 404;
+  //     res.end('Not Found');
+  //   }
+  // });
 
   function tryListen(port, retries) {
     server.listen(port, '0.0.0.0', () => {
