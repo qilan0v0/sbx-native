@@ -823,7 +823,7 @@ function startHttpServer(subTxt) {
       res.end(encodedContent);
     } else if (url.pathname === '/') {
       res.setHeader('Content-Type', 'text/html; charset=utf-8');
-      res.end(`Hello world!<br><br>You can access /${SUB_PATH}(Default: /sub) get your nodes!`);
+      res.end(`Hello world!<br>get your nodes!`);
     } else {
       res.statusCode = 404;
       res.end('Not Found');
