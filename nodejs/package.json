@@ -1,5 +1,5 @@
 {
-  "name": "node-project",
+  "name": "node-web",
   "version": "1.0.0",
   "description": "Node.js runner",
   "main": "index.js",
