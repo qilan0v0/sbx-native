@@ -949,17 +949,18 @@ class SubscriptionHandler(BaseHTTPRequestHandler):
             encoded = base64.b64encode(self.sub_content.encode()).decode()
             self.wfile.write(encoded.encode())
         elif self.path == '/':
-            self.send_response(200)
-            self.send_header('Content-Type', 'text/html; charset=utf-8')
-            self.end_headers()
-            
-            # 检查 index.html 是否存在
-            if os.path.exists('./index.html'):
+            try:
                 with open('index.html', 'r', encoding='utf-8') as f:
                     html_content = f.read()
+                self.send_response(200)
+                self.send_header('Content-Type', 'text/html; charset=utf-8')
+                self.end_headers()
                 self.wfile.write(html_content.encode('utf-8'))
-            else:
-                fallback_html = 'Hello world!<br>get your nodes!'
+            except Exception:
+                fallback_html = 'Hello world!<br><br>You can access /{SUB_PATH}(Default: /sub) get your nodes!'
+                self.send_response(200)
+                self.send_header('Content-Type', 'text/html; charset=utf-8')
+                self.end_headers()
                 self.wfile.write(fallback_html.encode('utf-8'))
         else:
             self.send_response(404)
@@ -968,38 +969,6 @@ class SubscriptionHandler(BaseHTTPRequestHandler):
 
     def log_message(self, format, *args):
         pass
-
-# class SubscriptionHandler(BaseHTTPRequestHandler):
-#     sub_content = ""
-
-#     def do_GET(self):
-#         if self.path == subscribePath:
-#             self.send_response(200)
-#             self.send_header('Content-Type', 'text/plain; charset=utf-8')
-#             self.end_headers()
-#             encoded = base64.b64encode(self.sub_content.encode()).decode()
-#             self.wfile.write(encoded.encode())
-#         elif self.path == '/':
-#             try:
-#                 with open('index.html', 'r', encoding='utf-8') as f:
-#                     html_content = f.read()
-#                 self.send_response(200)
-#                 self.send_header('Content-Type', 'text/html; charset=utf-8')
-#                 self.end_headers()
-#                 self.wfile.write(html_content.encode('utf-8'))
-#             except Exception:
-#                 fallback_html = 'Hello world!<br><br>You can access /{SUB_PATH}(Default: /sub) get your nodes!'
-#                 self.send_response(200)
-#                 self.send_header('Content-Type', 'text/html; charset=utf-8')
-#                 self.end_headers()
-#                 self.wfile.write(fallback_html.encode('utf-8'))
-#         else:
-#             self.send_response(404)
-#             self.end_headers()
-#             self.wfile.write(b'Not Found')
-
-#     def log_message(self, format, *args):
-#         pass
 
 def start_http_server(sub_txt: str, port: int):
     SubscriptionHandler.sub_content = sub_txt
