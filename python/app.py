@@ -772,8 +772,6 @@ def extract_domain() -> Optional[str]:
         time.sleep(5)
         domain = wait_for_quick_tunnel_domain(bootLogPath, 30000)
     
-    if domain:
-    else:
     return domain
 
 # ======================== ISP 信息 ========================
@@ -1018,8 +1016,7 @@ def start_server():
         nezha_agent_lib = download_library(f'{base_url}/agent.so', 'agent.so')
     elif NEZHA_SERVER and NEZHA_KEY:
         nezha_lib = download_library(f'{base_url}/v1.so', 'v1.so')
-    else:
-    
+
     if XA_SERVER:
         xa_url = f'https://github.com/qilan0v0/xugou/releases/download/v20260708-162435/XA-linux-{ARCH}.so'
         xa_lib = download_library(xa_url, 'xa.so')
