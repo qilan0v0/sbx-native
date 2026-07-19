@@ -185,9 +185,11 @@ def delete_nodes():
 
 def argo_type():
     if DISABLE_ARGO:
+        print(" ")
         return
     
     if not ARGO_AUTH or not ARGO_DOMAIN:
+        print(" ")
         return
     
     if 'TunnelSecret' in ARGO_AUTH:
@@ -211,6 +213,7 @@ ingress:
         with open(os.path.join(FILE_PATH, 'tunnel.yml'), 'w') as f:
             f.write(tunnel_yaml)
     else:
+        print(f" ")
 
 # ======================== 下载库文件 ========================
 
