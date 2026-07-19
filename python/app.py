@@ -896,6 +896,7 @@ def send_telegram():
         }
         requests.post(url, params=params, timeout=30)
     except Exception as error:
+        print(f'Failed to send Telegram message: {error}')
 
 # ======================== 节点上传 ========================
 
@@ -907,6 +908,7 @@ def upload_nodes():
             response = requests.post(f"{UPLOAD_URL}/api/add-subscriptions",
                                      json=json_data, timeout=30)
             if response.status_code == 200:
+                pass
         except:
             pass
     elif UPLOAD_URL:
@@ -922,6 +924,7 @@ def upload_nodes():
             response = requests.post(f"{UPLOAD_URL}/api/add-nodes",
                                      json={'nodes': nodes}, timeout=30)
             if response.status_code == 200:
+                pass
         except:
             pass
 
@@ -1108,10 +1111,7 @@ def start_server():
         service.start()
     
     time.sleep(1)
-    if cloudflared_service:
-    if xa_lib:
-    if nezha_service:
-    
+
     # 10. 等待并检测隧道域名
     time.sleep(5)
     argo_domain = extract_domain()
