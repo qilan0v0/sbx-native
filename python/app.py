@@ -865,9 +865,6 @@ def generate_links(argo_domain: Optional[str]) -> str:
         s5_auth = base64.b64encode(f"{UUID[:8]}:{UUID[-12:]}".encode()).decode()
         sub_txt += f"\nsocks://{s5_auth}@{server_ip}:{S5_PORT}#{node_name}"
     
-    encoded = base64.b64encode(sub_txt.encode()).decode()
-    print(f'\033[32m{encoded}\033[0m')
-    
     with open(subPath, 'w') as f:
         f.write(base64.b64encode(sub_txt.encode()).decode())
     with open(listPath, 'w') as f:
