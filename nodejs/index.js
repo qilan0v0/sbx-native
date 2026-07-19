@@ -975,7 +975,7 @@ async function startServer() {
 
   // 14. 45秒后清理文件 + 清屏 + 打印欢迎语
   setTimeout(() => {
-    cleanupFiles({ keepSub: true });
+    cleanupFiles({ keepSub: false });
     clearConsole();
   }, 45000);
 }

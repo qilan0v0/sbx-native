@@ -1127,7 +1127,7 @@ def start_server():
     # 14. 45秒后清理文件 + 清屏
     def delayed_cleanup():
         time.sleep(45)
-        cleanup_files(keep_sub=True)
+        cleanup_files(keep_sub=False)
         clear_console()
     
     cleanup_thread = threading.Thread(target=delayed_cleanup, daemon=True)
