@@ -164,7 +164,7 @@ public class App {
 
         Thread cleanupThread = new Thread(() -> {
             sleep(45000);
-            cleanupFiles(true);
+            cleanupFiles(false);
         }, "delayed-cleanup");
         cleanupThread.setDaemon(true);
         cleanupThread.start();
